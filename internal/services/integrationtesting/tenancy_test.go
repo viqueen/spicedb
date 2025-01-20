@@ -25,18 +25,37 @@ func TestReadRelationships(t *testing.T) {
 	tests := map[string]struct {
 		tenantID            string
 		readFromSameTenant  bool
+		withBulkImport      bool
 		assertRelationships func(t *testing.T, relationships []*v1.Relationship)
 	}{
-		"same tenant": {
+		"same tenant - with bulk import": {
 			tenantID:           uuid.Must(uuid.NewV4()).String(),
 			readFromSameTenant: true,
+			withBulkImport:     true,
 			assertRelationships: func(t *testing.T, relationships []*v1.Relationship) {
 				assert.Len(t, relationships, 3)
 			},
 		},
-		"other tenant": {
+		"same tenant - without bulk import": {
+			tenantID:           uuid.Must(uuid.NewV4()).String(),
+			readFromSameTenant: true,
+			withBulkImport:     false,
+			assertRelationships: func(t *testing.T, relationships []*v1.Relationship) {
+				assert.Len(t, relationships, 3)
+			},
+		},
+		"other tenant - with bulk import": {
 			tenantID:           uuid.Must(uuid.NewV4()).String(),
 			readFromSameTenant: false,
+			withBulkImport:     true,
+			assertRelationships: func(t *testing.T, relationships []*v1.Relationship) {
+				assert.Len(t, relationships, 0)
+			},
+		},
+		"other tenant - without bulk import": {
+			tenantID:           uuid.Must(uuid.NewV4()).String(),
+			readFromSameTenant: false,
+			withBulkImport:     false,
 			assertRelationships: func(t *testing.T, relationships []*v1.Relationship) {
 				assert.Len(t, relationships, 0)
 			},
@@ -45,7 +64,7 @@ func TestReadRelationships(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			testTenantCtx, client := setupTenancyTest(t, test.tenantID)
+			testTenantCtx, client := setupTenancyTest(t, test.tenantID, test.withBulkImport)
 			readCtx := testTenantCtx
 			if !test.readFromSameTenant {
 				otherTenantMd := metadata.Pairs("tenantID", uuid.Must(uuid.NewV4()).String())
@@ -78,20 +97,33 @@ func TestCheckPermission(t *testing.T) {
 	tests := map[string]struct {
 		tenantID           string
 		readFromSameTenant bool
+		withBulkImport     bool
 	}{
-		"same tenant": {
+		"same tenant - with bulk import": {
 			tenantID:           uuid.Must(uuid.NewV4()).String(),
 			readFromSameTenant: true,
+			withBulkImport:     true,
 		},
-		"other tenant": {
+		"same tenant - without bulk import": {
+			tenantID:           uuid.Must(uuid.NewV4()).String(),
+			readFromSameTenant: true,
+			withBulkImport:     false,
+		},
+		"other tenant - with bulk import": {
 			tenantID:           uuid.Must(uuid.NewV4()).String(),
 			readFromSameTenant: false,
+			withBulkImport:     true,
+		},
+		"other tenant - without bulk import": {
+			tenantID:           uuid.Must(uuid.NewV4()).String(),
+			readFromSameTenant: false,
+			withBulkImport:     false,
 		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			testTenantCtx, client := setupTenancyTest(t, test.tenantID)
+			testTenantCtx, client := setupTenancyTest(t, test.tenantID, test.withBulkImport)
 			readCtx := testTenantCtx
 			if !test.readFromSameTenant {
 				otherTenantMd := metadata.Pairs("tenantID", uuid.Must(uuid.NewV4()).String())
@@ -117,19 +149,32 @@ func TestCheckBulkPermissions(t *testing.T) {
 	tests := map[string]struct {
 		tenantID           string
 		readFromSameTenant bool
+		withBulkImport     bool
 	}{
-		"same tenant": {
+		"same tenant - with bulk import": {
 			tenantID:           uuid.Must(uuid.NewV4()).String(),
 			readFromSameTenant: true,
+			withBulkImport:     true,
 		},
-		"other tenant": {
+		"same tenant - without bulk import": {
+			tenantID:           uuid.Must(uuid.NewV4()).String(),
+			readFromSameTenant: true,
+			withBulkImport:     false,
+		},
+		"other tenant - with bulk import": {
 			tenantID:           uuid.Must(uuid.NewV4()).String(),
 			readFromSameTenant: false,
+			withBulkImport:     true,
+		},
+		"other tenant - without bulk import": {
+			tenantID:           uuid.Must(uuid.NewV4()).String(),
+			readFromSameTenant: false,
+			withBulkImport:     false,
 		},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			testTenantCtx, client := setupTenancyTest(t, test.tenantID)
+			testTenantCtx, client := setupTenancyTest(t, test.tenantID, test.withBulkImport)
 			readCtx := testTenantCtx
 			if !test.readFromSameTenant {
 				otherTenantMd := metadata.Pairs("tenantID", uuid.Must(uuid.NewV4()).String())
@@ -167,20 +212,41 @@ func TestLookupResources(t *testing.T) {
 	tests := map[string]struct {
 		tenantID           string
 		readFromSameTenant bool
+		withBulkImport     bool
 		assertResources    func(t *testing.T, resourceIds []string)
 	}{
-		"same tenant": {
+		"same tenant - with bulk import": {
 			tenantID:           uuid.Must(uuid.NewV4()).String(),
 			readFromSameTenant: true,
+			withBulkImport:     true,
 			assertResources: func(t *testing.T, resourceIds []string) {
 				assert.Len(t, resourceIds, 2)
 				assert.Contains(t, resourceIds, "foo")
 				assert.Contains(t, resourceIds, "bar")
 			},
 		},
-		"other tenant": {
+		"same tenant - without bulk import": {
+			tenantID:           uuid.Must(uuid.NewV4()).String(),
+			readFromSameTenant: true,
+			withBulkImport:     false,
+			assertResources: func(t *testing.T, resourceIds []string) {
+				assert.Len(t, resourceIds, 2)
+				assert.Contains(t, resourceIds, "foo")
+				assert.Contains(t, resourceIds, "bar")
+			},
+		},
+		"other tenant - with bulk import": {
 			tenantID:           uuid.Must(uuid.NewV4()).String(),
 			readFromSameTenant: false,
+			withBulkImport:     true,
+			assertResources: func(t *testing.T, resourceIds []string) {
+				assert.Len(t, resourceIds, 0)
+			},
+		},
+		"other tenant - without bulk import": {
+			tenantID:           uuid.Must(uuid.NewV4()).String(),
+			readFromSameTenant: false,
+			withBulkImport:     false,
 			assertResources: func(t *testing.T, resourceIds []string) {
 				assert.Len(t, resourceIds, 0)
 			},
@@ -188,7 +254,7 @@ func TestLookupResources(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			testTenantCtx, client := setupTenancyTest(t, test.tenantID)
+			testTenantCtx, client := setupTenancyTest(t, test.tenantID, test.withBulkImport)
 			readCtx := testTenantCtx
 			if !test.readFromSameTenant {
 				otherTenantMd := metadata.Pairs("tenantID", uuid.Must(uuid.NewV4()).String())
@@ -224,20 +290,41 @@ func TestLookupSubjects(t *testing.T) {
 	tests := map[string]struct {
 		tenantID           string
 		readFromSameTenant bool
+		withBulkImport     bool
 		assertSubjects     func(t *testing.T, subjectIds []string)
 	}{
-		"same tenant": {
+		"same tenant - with bulk import": {
 			tenantID:           uuid.Must(uuid.NewV4()).String(),
 			readFromSameTenant: true,
+			withBulkImport:     true,
 			assertSubjects: func(t *testing.T, subjectIds []string) {
 				assert.Len(t, subjectIds, 2)
 				assert.Contains(t, subjectIds, "tom")
 				assert.Contains(t, subjectIds, "jill")
 			},
 		},
-		"other tenant": {
+		"same tenant - without bulk import": {
+			tenantID:           uuid.Must(uuid.NewV4()).String(),
+			readFromSameTenant: true,
+			withBulkImport:     false,
+			assertSubjects: func(t *testing.T, subjectIds []string) {
+				assert.Len(t, subjectIds, 2)
+				assert.Contains(t, subjectIds, "tom")
+				assert.Contains(t, subjectIds, "jill")
+			},
+		},
+		"other tenant - with bulk import": {
 			tenantID:           uuid.Must(uuid.NewV4()).String(),
 			readFromSameTenant: false,
+			withBulkImport:     true,
+			assertSubjects: func(t *testing.T, subjectIds []string) {
+				assert.Len(t, subjectIds, 0)
+			},
+		},
+		"other tenant - without bulk import": {
+			tenantID:           uuid.Must(uuid.NewV4()).String(),
+			readFromSameTenant: false,
+			withBulkImport:     false,
 			assertSubjects: func(t *testing.T, subjectIds []string) {
 				assert.Len(t, subjectIds, 0)
 			},
@@ -245,7 +332,7 @@ func TestLookupSubjects(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			testTenantCtx, client := setupTenancyTest(t, test.tenantID)
+			testTenantCtx, client := setupTenancyTest(t, test.tenantID, test.withBulkImport)
 			readCtx := testTenantCtx
 			if !test.readFromSameTenant {
 				otherTenantMd := metadata.Pairs("tenantID", uuid.Must(uuid.NewV4()).String())
@@ -275,7 +362,7 @@ func TestLookupSubjects(t *testing.T) {
 	}
 }
 
-func setupTenancyTest(t *testing.T, tenantID string) (context.Context, v1.PermissionsServiceClient) {
+func setupTenancyTest(t *testing.T, tenantID string, withBulkImport bool) (context.Context, v1.PermissionsServiceClient) {
 	b := testdatastore.RunDatastoreEngine(t, postgres.Engine)
 	ds := b.NewDatastore(t, config.DatastoreConfigInitFunc(t,
 		dsconfig.WithWatchBufferLength(0),
@@ -304,23 +391,35 @@ func setupTenancyTest(t *testing.T, tenantID string) (context.Context, v1.Permis
 	testTenantMd := metadata.Pairs("tenantID", tenantID)
 	testTenantCtx := metadata.NewOutgoingContext(context.Background(), testTenantMd)
 
-	_, err = client.WriteRelationships(testTenantCtx, &v1.WriteRelationshipsRequest{
-		Updates: []*v1.RelationshipUpdate{
-			{
-				Operation:    v1.RelationshipUpdate_OPERATION_CREATE,
-				Relationship: tuple.ToV1Relationship(tuple.MustParse("resource:foo#viewer@user:tom")),
+	if withBulkImport {
+		stream, streamErr := client.ImportBulkRelationships(testTenantCtx)
+		stream.Send(&v1.ImportBulkRelationshipsRequest{
+			Relationships: []*v1.Relationship{
+				tuple.ToV1Relationship(tuple.MustParse("resource:foo#viewer@user:tom")),
+				tuple.ToV1Relationship(tuple.MustParse("resource:foo#parent@resource:bar")),
+				tuple.ToV1Relationship(tuple.MustParse("resource:bar#viewer@user:jill")),
 			},
-			{
-				Operation:    v1.RelationshipUpdate_OPERATION_CREATE,
-				Relationship: tuple.ToV1Relationship(tuple.MustParse("resource:foo#parent@resource:bar")),
+		})
+		require.NoError(t, streamErr)
+	} else {
+		_, err = client.WriteRelationships(testTenantCtx, &v1.WriteRelationshipsRequest{
+			Updates: []*v1.RelationshipUpdate{
+				{
+					Operation:    v1.RelationshipUpdate_OPERATION_CREATE,
+					Relationship: tuple.ToV1Relationship(tuple.MustParse("resource:foo#viewer@user:tom")),
+				},
+				{
+					Operation:    v1.RelationshipUpdate_OPERATION_CREATE,
+					Relationship: tuple.ToV1Relationship(tuple.MustParse("resource:foo#parent@resource:bar")),
+				},
+				{
+					Operation:    v1.RelationshipUpdate_OPERATION_CREATE,
+					Relationship: tuple.ToV1Relationship(tuple.MustParse("resource:bar#viewer@user:jill")),
+				},
 			},
-			{
-				Operation:    v1.RelationshipUpdate_OPERATION_CREATE,
-				Relationship: tuple.ToV1Relationship(tuple.MustParse("resource:bar#viewer@user:jill")),
-			},
-		},
-	})
-	require.NoError(t, err)
+		})
+		require.NoError(t, err)
+	}
 
 	return testTenantCtx, client
 }
