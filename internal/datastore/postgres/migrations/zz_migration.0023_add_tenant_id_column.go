@@ -15,8 +15,8 @@ const reCreateReverseQueryIndex = `CREATE INDEX ix_relation_tuple_by_subject ON 
 const dropReverseCheckIndex = `DROP INDEX IF EXISTS ix_relation_tuple_by_subject_relation`
 const reCreateReverseCheckIndex = `CREATE INDEX ix_relation_tuple_by_subject_relation ON relation_tuple (tenant_id, userset_namespace, userset_relation, namespace, relation)`
 
-const dropDeletedTransactionIndex = `DROP INDEX IF EXISTS ix_relation_tuple_by_deleted_transaction`
-const reCreateDeletedTransactionIndex = `CREATE INDEX ix_relation_tuple_by_deleted_transaction ON relation_tuple (tenant_id, deleted_transaction)`
+//const dropDeletedTransactionIndex = `DROP INDEX IF EXISTS ix_relation_tuple_by_deleted_transaction`
+//const reCreateDeletedTransactionIndex = `CREATE INDEX ix_relation_tuple_by_deleted_transaction ON relation_tuple (tenant_id, deleted_transaction)`
 
 func init() {
 	err := DatabaseMigrations.Register(
@@ -42,12 +42,12 @@ func init() {
 			if _, err := trx.Exec(ctx, reCreateReverseCheckIndex); err != nil {
 				return err
 			}
-			if _, err := trx.Exec(ctx, dropDeletedTransactionIndex); err != nil {
-				return err
-			}
-			if _, err := trx.Exec(ctx, reCreateDeletedTransactionIndex); err != nil {
-				return err
-			}
+			//if _, err := trx.Exec(ctx, dropDeletedTransactionIndex); err != nil {
+			//	return err
+			//}
+			//if _, err := trx.Exec(ctx, reCreateDeletedTransactionIndex); err != nil {
+			//	return err
+			//}
 			return nil
 		},
 	)
