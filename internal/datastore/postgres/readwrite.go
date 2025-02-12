@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/authzed/spicedb/pkg/middleware/tenantid"
 	"strings"
 
 	"github.com/ccoveille/go-safecast"
@@ -54,6 +55,7 @@ var (
 		colCaveatContextName,
 		colCaveatContext,
 		colExpiration,
+		colTenantID,
 	)
 
 	deleteTuple     = psql.Update(tableTuple).Where(sq.Eq{colDeletedXid: liveDeletedTxnID})
@@ -103,6 +105,7 @@ func appendForInsertion(builder sq.InsertBuilder, tpl tuple.Relationship) sq.Ins
 		caveatName,
 		caveatContext, // PGX driver serializes map[string]any to JSONB type columns,
 		tpl.OptionalExpiration,
+		tpl.OptionalTenantID,
 	}
 
 	return builder.Values(valuesToWrite...)
@@ -189,9 +192,11 @@ func (rwt *pgReadWriteTXN) WriteRelationships(ctx context.Context, mutations []t
 		return err
 	}
 
+	tenantID := tenantid.FromContext(ctx)
 	// Parse the updates, building inserts for CREATE/TOUCH and deletes for DELETE.
 	for _, mut := range mutations {
 		rel := mut.Relationship
+		rel.OptionalTenantID = tenantID
 
 		switch mut.Operation {
 		case tuple.UpdateOperationCreate:

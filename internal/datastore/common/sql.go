@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+	"github.com/authzed/spicedb/pkg/middleware/tenantid"
 	"maps"
 	"math"
 	"strings"
@@ -474,6 +475,14 @@ func (sqf SchemaQueryFilterer) FilterWithRelationshipsFilter(filter datastore.Re
 	}
 
 	return csqf, nil
+}
+
+func (sqf SchemaQueryFilterer) FilterWithTenantIDFilter(ctx context.Context) SchemaQueryFilterer {
+	tenantID := tenantid.FromContext(ctx)
+	if tenantID != "" {
+		sqf.queryBuilder = sqf.queryBuilder.Where(sq.Eq{sqf.schema.ColTenantID: tenantID})
+	}
+	return sqf
 }
 
 // MustFilterWithSubjectsSelectors returns a new SchemaQueryFilterer that is limited to resources with

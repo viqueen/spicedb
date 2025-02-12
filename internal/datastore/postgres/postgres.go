@@ -65,6 +65,7 @@ const (
 	colCaveatContextName = "caveat_name"
 	colCaveatContext     = "caveat_context"
 	colExpiration        = "expiration"
+	colTenantID          = "tenant_id"
 
 	colCounterName         = "name"
 	colCounterFilter       = "serialized_filter"
@@ -327,6 +328,7 @@ func newPostgresDatastore(
 		common.WithColCaveatName(colCaveatContextName),
 		common.WithColCaveatContext(colCaveatContext),
 		common.WithColExpiration(colExpiration),
+		common.WithColTenantID(colTenantID),
 		common.WithPaginationFilterType(common.TupleComparison),
 		common.WithPlaceholderFormat(sq.Dollar),
 		common.WithNowFunction("NOW"),

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
 
@@ -150,12 +149,12 @@ func (r *pgReader) QueryRelationships(
 	opts ...options.QueryOptionsOption,
 ) (iter datastore.RelationshipIterator, err error) {
 	qBuilder, err := common.NewSchemaQueryFiltererForRelationshipsSelect(r.schema, r.filterMaximumIDCount).
+		FilterWithTenantIDFilter(ctx).
 		WithAdditionalFilter(r.aliveFilter).
 		FilterWithRelationshipsFilter(filter)
 	if err != nil {
 		return nil, err
 	}
-
 	return r.executor.ExecuteQuery(ctx, qBuilder, opts...)
 }
 
@@ -165,12 +164,12 @@ func (r *pgReader) ReverseQueryRelationships(
 	opts ...options.ReverseQueryOptionsOption,
 ) (iter datastore.RelationshipIterator, err error) {
 	qBuilder, err := common.NewSchemaQueryFiltererForRelationshipsSelect(r.schema, r.filterMaximumIDCount).
+		FilterWithTenantIDFilter(ctx).
 		WithAdditionalFilter(r.aliveFilter).
 		FilterWithSubjectsSelectors(subjectsFilter.AsSelector())
 	if err != nil {
 		return nil, err
 	}
-
 	queryOpts := options.NewReverseQueryOptionsWithOptions(opts...)
 
 	if queryOpts.ResRelation != nil {

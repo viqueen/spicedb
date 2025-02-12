@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/authzed/spicedb/pkg/middleware/tenantid"
 	"io"
 	"strings"
 	"time"
@@ -139,7 +140,8 @@ type secondaryRespTuple[S responseMessage] struct {
 }
 
 func dispatchRequest[Q requestMessage, S responseMessage](ctx context.Context, cr *clusterDispatcher, reqKey string, req Q, handler func(context.Context, ClusterClient) (S, error)) (S, error) {
-	withTimeout, cancelFn := context.WithTimeout(ctx, cr.dispatchOverallTimeout)
+	withTenantIDCtx := tenantid.OutgoingContextWithTenantID(ctx, tenantid.FromContext(ctx))
+	withTimeout, cancelFn := context.WithTimeout(withTenantIDCtx, cr.dispatchOverallTimeout)
 	defer cancelFn()
 
 	if len(cr.secondaryDispatchExprs) == 0 || len(cr.secondaryDispatch) == 0 {
@@ -281,7 +283,8 @@ func dispatchStreamingRequest[Q requestMessageWithCursor, R responseMessageWithC
 	stream dispatch.Stream[R],
 	handler func(context.Context, ClusterClient) (receiver[R], error),
 ) error {
-	withTimeout, cancelFn := context.WithTimeout(ctx, cr.dispatchOverallTimeout)
+	withTenantIDCtx := tenantid.OutgoingContextWithTenantID(ctx, tenantid.FromContext(ctx))
+	withTimeout, cancelFn := context.WithTimeout(withTenantIDCtx, cr.dispatchOverallTimeout)
 	defer cancelFn()
 
 	client, err := handler(withTimeout, cr.clusterClient)
@@ -434,7 +437,8 @@ func (cr *clusterDispatcher) DispatchLookupSubjects(
 		return err
 	}
 
-	withTimeout, cancelFn := context.WithTimeout(ctx, cr.dispatchOverallTimeout)
+	withTenantIDCtx := tenantid.OutgoingContextWithTenantID(ctx, tenantid.FromContext(ctx))
+	withTimeout, cancelFn := context.WithTimeout(withTenantIDCtx, cr.dispatchOverallTimeout)
 	defer cancelFn()
 
 	client, err := cr.clusterClient.DispatchLookupSubjects(withTimeout, req)
