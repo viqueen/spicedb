@@ -7,6 +7,7 @@
     </a>
 </h1>
 
+
 <h3 align="center">
   SpiceDB sets the standard for authorization that <i>scales</i>.
   <br/><br/>Scale with<br/>
