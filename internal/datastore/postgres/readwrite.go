@@ -18,6 +18,7 @@ import (
 	"github.com/authzed/spicedb/pkg/datastore"
 	"github.com/authzed/spicedb/pkg/datastore/options"
 	"github.com/authzed/spicedb/pkg/genutil/mapz"
+	"github.com/authzed/spicedb/pkg/middleware/tenantid"
 	core "github.com/authzed/spicedb/pkg/proto/core/v1"
 	typedschema "github.com/authzed/spicedb/pkg/schema"
 	"github.com/authzed/spicedb/pkg/spiceerrors"
@@ -53,6 +54,7 @@ var (
 		schema.ColCaveatContextName,
 		schema.ColCaveatContext,
 		schema.ColExpiration,
+		schema.ColTenantID,
 	)
 
 	deleteTuple     = psql.Update(schema.TableTuple).Where(sq.Eq{schema.ColDeletedXid: liveDeletedTxnID})
@@ -102,6 +104,7 @@ func appendForInsertion(builder sq.InsertBuilder, tpl tuple.Relationship) sq.Ins
 		caveatName,
 		caveatContext, // PGX driver serializes map[string]any to JSONB columns,
 		tpl.OptionalExpiration,
+		tpl.OptionalTenantID,
 	}
 
 	return builder.Values(valuesToWrite...)
@@ -188,9 +191,11 @@ func (rwt *pgReadWriteTXN) WriteRelationships(ctx context.Context, mutations []t
 		return err
 	}
 
+	tenantID := tenantid.FromContext(ctx)
 	// Parse the updates, building inserts for CREATE/TOUCH and deletes for DELETE.
 	for _, mut := range mutations {
 		rel := mut.Relationship
+		rel.OptionalTenantID = tenantID
 
 		switch mut.Operation {
 		case tuple.UpdateOperationCreate:

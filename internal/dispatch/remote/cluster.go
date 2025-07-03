@@ -25,6 +25,7 @@ import (
 	"github.com/authzed/spicedb/internal/dispatch"
 	"github.com/authzed/spicedb/internal/dispatch/keys"
 	log "github.com/authzed/spicedb/internal/logging"
+	"github.com/authzed/spicedb/pkg/middleware/tenantid"
 	corev1 "github.com/authzed/spicedb/pkg/proto/core/v1"
 	v1 "github.com/authzed/spicedb/pkg/proto/dispatch/v1"
 	"github.com/authzed/spicedb/pkg/spiceerrors"
@@ -277,7 +278,8 @@ func dispatchSyncRequest[Q requestMessage, S responseMessage](
 	subjectTypeAndRelation tuple.RelationReference,
 	handler func(context.Context, ClusterClient) (S, error),
 ) (S, error) {
-	withTimeout, cancelFn := context.WithTimeout(ctx, cr.dispatchOverallTimeout)
+	withTenantIDCtx := tenantid.OutgoingContextWithTenantID(ctx, tenantid.FromContext(ctx))
+	withTimeout, cancelFn := context.WithTimeout(withTenantIDCtx, cr.dispatchOverallTimeout)
 	defer cancelFn()
 
 	if len(cr.secondaryDispatchExprs) == 0 || len(cr.secondaryDispatch) == 0 {
@@ -489,7 +491,8 @@ func dispatchStreamingRequest[Q streamingRequestMessage, R responseMessage](
 	stream dispatch.Stream[R],
 	handler func(context.Context, ClusterClient) (receiver[R], error),
 ) error {
-	withTimeout, cancelFn := context.WithTimeout(ctx, cr.dispatchOverallTimeout)
+	withTenantIDCtx := tenantid.OutgoingContextWithTenantID(ctx, tenantid.FromContext(ctx))
+	withTimeout, cancelFn := context.WithTimeout(withTenantIDCtx, cr.dispatchOverallTimeout)
 	defer cancelFn()
 
 	// If no secondary dispatches are defined, just invoke directly.

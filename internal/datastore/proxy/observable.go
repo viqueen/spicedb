@@ -14,6 +14,7 @@ import (
 	"github.com/authzed/spicedb/internal/datastore/common"
 	"github.com/authzed/spicedb/pkg/datastore"
 	"github.com/authzed/spicedb/pkg/datastore/options"
+	"github.com/authzed/spicedb/pkg/middleware/tenantid"
 	core "github.com/authzed/spicedb/pkg/proto/core/v1"
 	"github.com/authzed/spicedb/pkg/tuple"
 )
@@ -220,10 +221,12 @@ func (r *observableReader) ReadNamespaceByName(ctx context.Context, nsName strin
 
 func (r *observableReader) QueryRelationships(ctx context.Context, filter datastore.RelationshipsFilter, opts ...options.QueryOptionsOption) (datastore.RelationshipIterator, error) {
 	queryOpts := options.NewQueryOptionsWithOptions(opts...)
+	tenantID := tenantid.FromContext(ctx)
 	ctx, closer := observe(ctx, "QueryRelationships", string(queryOpts.QueryShape), trace.WithAttributes(
 		attribute.String("resourceType", filter.OptionalResourceType),
 		attribute.String("resourceRelation", filter.OptionalResourceRelation),
 		attribute.String("queryShape", string(queryOpts.QueryShape)),
+		attribute.String("tenantID", tenantID),
 	))
 
 	iterator, err := r.delegate.QueryRelationships(ctx, filter, opts...)

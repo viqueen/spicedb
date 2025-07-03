@@ -19,6 +19,7 @@ import (
 	"github.com/authzed/spicedb/pkg/datastore"
 	"github.com/authzed/spicedb/pkg/datastore/options"
 	"github.com/authzed/spicedb/pkg/datastore/queryshape"
+	"github.com/authzed/spicedb/pkg/middleware/tenantid"
 	"github.com/authzed/spicedb/pkg/spiceerrors"
 )
 
@@ -535,6 +536,14 @@ func (sqf SchemaQueryFilterer) FilterWithRelationshipsFilter(filter datastore.Re
 	}
 
 	return csqf, nil
+}
+
+func (sqf SchemaQueryFilterer) FilterWithTenantIDFilter(ctx context.Context) SchemaQueryFilterer {
+	tenantID := tenantid.FromContext(ctx)
+	if tenantID != "" {
+		sqf.queryBuilder = sqf.queryBuilder.Where(sq.Eq{sqf.schema.ColTenantID: tenantID})
+	}
+	return sqf
 }
 
 // MustFilterWithSubjectsSelectors returns a new SchemaQueryFilterer that is limited to resources with

@@ -32,6 +32,7 @@ type SchemaInformation struct {
 	ColCaveatContext string `debugmap:"visible"`
 
 	ColExpiration string `debugmap:"visible"`
+	ColTenantID   string `debugmap:"visible"`
 
 	ColIntegrityKeyID     string `debugmap:"visible"`
 	ColIntegrityHash      string `debugmap:"visible"`
@@ -154,6 +155,10 @@ func (si SchemaInformation) mustValidate() {
 
 	if si.ColExpiration == "" {
 		panic("ColExpiration is required")
+	}
+
+	if si.ColTenantID == "" {
+		panic("ColTenantID is required")
 	}
 
 	if si.IntegrityEnabled {

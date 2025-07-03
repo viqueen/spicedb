@@ -151,6 +151,7 @@ func (r *pgReader) QueryRelationships(
 	opts ...options.QueryOptionsOption,
 ) (iter datastore.RelationshipIterator, err error) {
 	qBuilder, err := common.NewSchemaQueryFiltererForRelationshipsSelect(r.schema, r.filterMaximumIDCount).
+		FilterWithTenantIDFilter(ctx).
 		WithAdditionalFilter(r.aliveFilter).
 		FilterWithRelationshipsFilter(filter)
 	if err != nil {
@@ -170,6 +171,7 @@ func (r *pgReader) ReverseQueryRelationships(
 	opts ...options.ReverseQueryOptionsOption,
 ) (iter datastore.RelationshipIterator, err error) {
 	qBuilder, err := common.NewSchemaQueryFiltererForRelationshipsSelect(r.schema, r.filterMaximumIDCount).
+		FilterWithTenantIDFilter(ctx).
 		WithAdditionalFilter(r.aliveFilter).
 		FilterWithSubjectsSelectors(subjectsFilter.AsSelector())
 	if err != nil {

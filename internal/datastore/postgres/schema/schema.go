@@ -13,25 +13,25 @@ const (
 	TableCaveat              = "caveat"
 	TableRelationshipCounter = "relationship_counter"
 
-	ColXID               = "xid"
-	ColTimestamp         = "timestamp"
-	ColMetadata          = "metadata"
-	ColNamespace         = "namespace"
-	ColConfig            = "serialized_config"
-	ColCreatedXid        = "created_xid"
-	ColDeletedXid        = "deleted_xid"
-	ColSnapshot          = "snapshot"
-	ColObjectID          = "object_id"
-	ColRelation          = "relation"
-	ColUsersetNamespace  = "userset_namespace"
-	ColUsersetObjectID   = "userset_object_id"
-	ColUsersetRelation   = "userset_relation"
-	ColCaveatName        = "name"
-	ColCaveatDefinition  = "definition"
-	ColCaveatContextName = "caveat_name"
-	ColCaveatContext     = "caveat_context"
-	ColExpiration        = "expiration"
-
+	ColXID                 = "xid"
+	ColTimestamp           = "timestamp"
+	ColMetadata            = "metadata"
+	ColNamespace           = "namespace"
+	ColConfig              = "serialized_config"
+	ColCreatedXid          = "created_xid"
+	ColDeletedXid          = "deleted_xid"
+	ColSnapshot            = "snapshot"
+	ColObjectID            = "object_id"
+	ColRelation            = "relation"
+	ColUsersetNamespace    = "userset_namespace"
+	ColUsersetObjectID     = "userset_object_id"
+	ColUsersetRelation     = "userset_relation"
+	ColCaveatName          = "name"
+	ColCaveatDefinition    = "definition"
+	ColCaveatContextName   = "caveat_name"
+	ColCaveatContext       = "caveat_context"
+	ColExpiration          = "expiration"
+	ColTenantID            = "tenant_id"
 	ColCounterName         = "name"
 	ColCounterFilter       = "serialized_filter"
 	ColCounterCurrentCount = "current_count"
@@ -50,6 +50,7 @@ func Schema(colOptimizationOpt common.ColumnOptimizationOption, expirationDisabl
 		common.WithColCaveatName(ColCaveatContextName),
 		common.WithColCaveatContext(ColCaveatContext),
 		common.WithColExpiration(ColExpiration),
+		common.WithColTenantID(ColTenantID),
 		common.WithPaginationFilterType(common.TupleComparison),
 		common.WithPlaceholderFormat(sq.Dollar),
 		common.WithNowFunction("NOW"),
