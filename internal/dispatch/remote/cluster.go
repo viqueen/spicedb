@@ -9,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/authzed/spicedb/pkg/middleware/tenantid"
 	"github.com/caio/go-tdigest/v4"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
@@ -26,6 +25,7 @@ import (
 	"github.com/authzed/spicedb/internal/dispatch"
 	"github.com/authzed/spicedb/internal/dispatch/keys"
 	log "github.com/authzed/spicedb/internal/logging"
+	"github.com/authzed/spicedb/pkg/middleware/tenantid"
 	corev1 "github.com/authzed/spicedb/pkg/proto/core/v1"
 	v1 "github.com/authzed/spicedb/pkg/proto/dispatch/v1"
 	"github.com/authzed/spicedb/pkg/spiceerrors"
@@ -278,7 +278,8 @@ func dispatchSyncRequest[Q requestMessage, S responseMessage](
 	subjectTypeAndRelation tuple.RelationReference,
 	handler func(context.Context, ClusterClient) (S, error),
 ) (S, error) {
-	withTimeout, cancelFn := context.WithTimeout(ctx, cr.dispatchOverallTimeout)
+	withTenantIDCtx := tenantid.OutgoingContextWithTenantID(ctx, tenantid.FromContext(ctx))
+	withTimeout, cancelFn := context.WithTimeout(withTenantIDCtx, cr.dispatchOverallTimeout)
 	defer cancelFn()
 
 	if len(cr.secondaryDispatchExprs) == 0 || len(cr.secondaryDispatch) == 0 {
